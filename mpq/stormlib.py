@@ -47,14 +47,14 @@ class StormWrapper(type):
 
   def exec(self, funcname, *args):
     # debug
-    print(funcname, args)
+    #print(funcname, args)
 
     # Call the function
     func = getattr(shandle, funcname)
     ret = func(*args)
 
     # debug
-    print(ret)
+    #print(ret)
 
     # Handle errors
     code = shandle.GetLastError()
