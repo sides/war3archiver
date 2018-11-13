@@ -14,6 +14,7 @@ import sys
 from ctypes import (
   byref,
   c_void_p,
+  c_char_p,
   c_uint,
   c_uint64,
   create_string_buffer
@@ -29,11 +30,17 @@ class MPQFile(StormFile):
   def __init__(self, mpq):
     self.mpq = mpq
 
+  def contents(self):
+    return self.mpq.read(self.filename)
+
   def extract(self, target=None):
     return self.mpq.extract(self.filename, target)
 
-  def read(self):
-    return self.mpq.read(self.filename)
+  def move(self, newpath):
+    return self.mpq.move(self.filename, newpath)
+
+  def delete(self):
+    return self.mpq.delete(self.filename)
 
 class MPQ():
   def __init__(self, filename, readonly=True):
@@ -82,26 +89,6 @@ class MPQ():
 
     Storm.SFileFindClose(find_h)
 
-  def extract(self, mpq_path, local_path=None):
-    """Extract the file"""
-
-    # Handle arguments
-    if isinstance(mpq_path, StormFile):
-      mpq_path = mpq_path.filename
-
-    if local_path is None:
-      local_path = mpq_path
-
-    # Create the directories
-    local_path = local_path.replace('\\', '/')
-    try:
-      os.makedirs(os.path.dirname(local_path))
-    except Exception:
-      pass
-
-    # Extract!
-    Storm.SFileExtractFile(self.mpq_h, mpq_path.encode('utf-8'), local_path.encode('utf-8'), 0)
-
   def has(self, path):
     """Does the MPQ have the file?"""
 
@@ -135,6 +122,63 @@ class MPQ():
     # Close and return
     Storm.SFileCloseFile(file_h)
     return data.raw
+
+  def write(self, path, data):
+    """Write data to a new file"""
+
+    size = len(data)
+    data = c_char_p(data)
+    file_h = c_void_p()
+
+    Storm.SFileCreateFile(self.mpq_h, path.encode('utf-8'), 0, size, 0, 0, byref(file_h))
+    Storm.SFileWriteFile(file_h, byref(data), size, 0)
+    Storm.SFileFinishFile(file_h)
+
+  def move(self, path, newpath):
+    """Move (rename) a file"""
+
+    if isinstance(path, StormFile):
+      path = path.filename
+
+    Storm.SFileRenameFile(self.mpq_h, path.encode('utf-8'), newpath.encode('utf-8'))
+
+  def delete(self, path):
+    """Remove a file from the mpq"""
+
+    if isinstance(path, StormFile):
+      path = path.filename
+
+    Storm.SFileRemoveFile(self.mpq_h, path.encode('utf-8'), 0)
+
+  def extract(self, mpq_path, local_path=None):
+    """Extract the file"""
+
+    # Handle arguments
+    if isinstance(mpq_path, StormFile):
+      mpq_path = mpq_path.filename
+
+    if local_path is None:
+      local_path = mpq_path
+
+    # Create the directories
+    local_path = local_path.replace('\\', '/')
+    try:
+      os.makedirs(os.path.dirname(local_path))
+    except Exception:
+      pass
+
+    # Extract!
+    Storm.SFileExtractFile(self.mpq_h, mpq_path.encode('utf-8'), local_path.encode('utf-8'), 0)
+
+  def add(self, local_path, mpq_path=None):
+    """Add a local file to the mpq"""
+
+    if mpq_path is None:
+      mpq_path = os.path.basename(local_path)
+    elif isinstance(mpq_path, StormFile):
+      mpq_path = mpq_path.filename
+
+    Storm.SFileAddFileEx(self.mpq_h, local_path.encode('utf-8'), mpq_path.encode('utf-8'), 0, 0, 0)
 
   def patch(self, path, prefix=''):
     """Add MPQ as patches"""

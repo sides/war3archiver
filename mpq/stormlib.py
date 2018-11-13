@@ -46,17 +46,20 @@ class StormWrapper(type):
       return False
 
   def exec(self, funcname, *args):
+    # debug
+    print(funcname, args)
+
     # Call the function
     func = getattr(shandle, funcname)
     ret = func(*args)
 
     # debug
-    print(funcname, args, '->', ret)
+    print(ret)
 
     # Handle errors
     code = shandle.GetLastError()
     if ret == 0 and code not in (0, 106, 107): # "No more files" and "End of file" are not real errors
-      message = '%s\nCall: %s %s %s' % (StormErrors.get(code, 'Error %i' % code), funcname, args, ret)
+      message = '%s\nCall: %s %s -> %s' % (StormErrors.get(code, 'Error %i' % code), funcname, args, ret)
       raise Exception(message)
 
     return ret
@@ -86,6 +89,11 @@ StormErrors = {
   errno.EEXIST:   "ERROR_ALREADY_EXISTS",
   errno.ENOBUFS:  "ERROR_INSUFFICIENT_BUFFER",
 
+  5:    "ERROR_ACCESS_DENIED",
+  6:    "ERROR_INVALID_HANDLE",
+  32:   "ERROR_ACCESS_DENIED",
+  183:  "ERROR_ALREADY_EXISTS",
+
   1000: "ERROR_BAD_FORMAT",
   1001: "ERROR_NO_MORE_FILES",
   1002: "ERROR_HANDLE_EOF",
@@ -111,6 +119,26 @@ class StormCreateArchiveFlag(IntFlag):
   MPQ_CREATE_ARCHIVE_V2 = 0x01000000
   MPQ_CREATE_ARCHIVE_V3 = 0x02000000
   MPQ_CREATE_ARCHIVE_V4 = 0x03000000
+
+class StormAddFileFlag(IntFlag):
+  MPQ_FILE_IMPLODE         = 0x00000100
+  MPQ_FILE_COMPRESS        = 0x00000200
+  MPQ_FILE_ENCRYPTED       = 0x00010000
+  MPQ_FILE_FIX_KEY         = 0x00020000
+  MPQ_FILE_DELETE_MARKER   = 0x02000000
+  MPQ_FILE_SECTOR_CRC      = 0x04000000
+  MPQ_FILE_SINGLE_UNIT     = 0x01000000
+  MPQ_FILE_REPLACEEXISTING = 0x80000000
+
+class StormCompressFileFlag(IntFlag):
+  MPQ_COMPRESSION_HUFFMANN     = 0x01
+  MPQ_COMPRESSION_ZLIB         = 0x02
+  MPQ_COMPRESSION_PKWARE       = 0x08
+  MPQ_COMPRESSION_BZIP2        = 0x10
+  MPQ_COMPRESSION_SPARSE       = 0x20
+  MPQ_COMPRESSION_ADPCM_MONO   = 0x40
+  MPQ_COMPRESSION_ADPCM_STEREO = 0x80
+  MPQ_COMPRESSION_LZMA         = 0x12
 
 class StormFile(Structure):
   _fields_ = [
@@ -192,3 +220,21 @@ shandle.SFileFindNextFile.argtypes = [c_void_p, POINTER(StormFile)]
 
 shandle.SFileFindClose.restype = c_bool
 shandle.SFileFindClose.argtypes = [c_void_p]
+
+shandle.SFileCreateFile.restype = c_bool
+shandle.SFileCreateFile.argtypes = [c_void_p, c_char_p, c_uint64, c_uint, c_uint, c_uint, POINTER(c_void_p)]
+
+shandle.SFileWriteFile.restype = c_bool
+shandle.SFileWriteFile.argtypes = [c_void_p, POINTER(c_char_p), c_uint, c_uint]
+
+shandle.SFileFinishFile.restype = c_bool
+shandle.SFileFinishFile.argtypes = [c_void_p]
+
+shandle.SFileAddFileEx.restype = c_bool
+shandle.SFileAddFileEx.argtypes = [c_void_p, c_char_p, c_char_p, c_uint, c_uint, c_uint]
+
+shandle.SFileRemoveFile.restype = c_bool
+shandle.SFileRemoveFile.argtypes = [c_void_p, c_char_p, c_uint]
+
+shandle.SFileRenameFile.restype = c_bool
+shandle.SFileRenameFile.argtypes = [c_void_p, c_char_p, c_char_p]
