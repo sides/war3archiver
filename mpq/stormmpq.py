@@ -119,21 +119,21 @@ class MPQ():
       path = path.filename
 
     # Open the file
-    file = c_void_p()
-    Storm.SFileOpenFileEx(self.mpq_h, path.encode('utf-8'), 0, byref(file))
+    file_h = c_void_p()
+    Storm.SFileOpenFileEx(self.mpq_h, path.encode('utf-8'), 0, byref(file_h))
 
     # Get the size
     high = c_uint()
-    low = Storm.SFileGetFileSize(file, byref(high))
+    low = Storm.SFileGetFileSize(file_h, byref(high))
     size = high.value * pow(2, 32) + low
 
     # Read the File
     data = create_string_buffer(size)
     read = c_uint()
-    Storm.SFileReadFile(file, pointer(data), size, byref(read), None)
+    Storm.SFileReadFile(file_h, byref(data), size, byref(read), None)
 
     # Close and return
-    Storm.SFileCloseFile(file)
+    Storm.SFileCloseFile(file_h)
     return data.raw
 
   def patch(self, path, prefix=''):
