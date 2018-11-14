@@ -21,8 +21,11 @@ from ctypes import (
 )
 from .stormlib import (
   Storm,
+  StormException,
   StormOpenArchiveFlag,
   StormCreateArchiveFlag,
+  StormAddFileFlag,
+  StormCompressFileFlag,
   StormFile
 )
 
@@ -44,7 +47,7 @@ class MPQFile(StormFile):
 
 class MPQ():
   def __init__(self, filename, readonly=True):
-    """Open or create the MPQ archive"""
+    """Open or create an archive."""
 
     self.mpq_h = c_void_p()
 
@@ -58,17 +61,41 @@ class MPQ():
       Storm.SFileCreateArchive(filename.encode('utf-8'), 0, 4096, byref(self.mpq_h))
 
   def close(self):
-    """Close the MPQ archive"""
+    """Close the archive."""
 
     Storm.SFileCloseArchive(self.mpq_h)
     self.mpq_h = None
 
+  def compact(self):
+    """Compact the archive.
+
+    Requires a complete listfile.
+    I'm not entirely sure what this actually does, but it tends to take
+    a few KBs off.
+    """
+    Storm.SFileCompactArchive(self.mpq_h, None, 0)
+
+  def getsize(self):
+    """Get the hashtable size of the archive."""
+
+    return Storm.SFileGetMaxFileCount(self.mpq_h)
+
+  def setsize(self, size):
+    """Set the hashtable size of the archive.
+
+    Requires a complete listfile and typically errors when decreasing
+    size. Use with care!
+    """
+    size = min(max(size, 4), 524288)
+
+    Storm.SFileSetMaxFileCount(self.mpq_h, size)
+
   def find(self, mask='*'):
-    """List all the files matching the mask"""
+    """List all files matching a mask."""
 
     found = set([])
 
-    # Initial Find
+    # Initial find
     file = MPQFile(self)
     find_h = Storm.SFileFindFirstFile(self.mpq_h, mask.encode('utf-8'), byref(file), None)
     if not find_h:
@@ -87,10 +114,11 @@ class MPQ():
       found.add(file)
       file = MPQFile(self)
 
+    # Close the handle
     Storm.SFileFindClose(find_h)
 
   def has(self, path):
-    """Does the MPQ have the file?"""
+    """Does the archive have the file?"""
 
     # Handle argument
     if isinstance(path, StormFile):
@@ -114,7 +142,7 @@ class MPQ():
     low = Storm.SFileGetFileSize(file_h, byref(high))
     size = high.value * pow(2, 32) + low
 
-    # Read the File
+    # Read the file
     data = create_string_buffer(size)
     read = c_uint()
     Storm.SFileReadFile(file_h, byref(data), size, byref(read), None)
@@ -123,19 +151,25 @@ class MPQ():
     Storm.SFileCloseFile(file_h)
     return data.raw
 
-  def write(self, path, data):
-    """Write data to a new file"""
+  def write(self, path, data, compress=True, replace=False):
+    """Write data to a new file."""
 
     size = len(data)
     data = c_char_p(data)
     file_h = c_void_p()
 
-    Storm.SFileCreateFile(self.mpq_h, path.encode('utf-8'), 0, size, 0, 0, byref(file_h))
+    flags = 0
+    if compress:
+      flags |= StormAddFileFlag.MPQ_FILE_COMPRESS
+    if replace:
+      flags |= StormAddFileFlag.MPQ_FILE_REPLACEEXISTING
+
+    Storm.SFileCreateFile(self.mpq_h, path.encode('utf-8'), 0, size, 0, flags, byref(file_h))
     Storm.SFileWriteFile(file_h, byref(data), size, 0)
     Storm.SFileFinishFile(file_h)
 
   def rename(self, path, newpath):
-    """Rename a file"""
+    """Rename a file."""
 
     if isinstance(path, StormFile):
       path = path.filename
@@ -143,7 +177,7 @@ class MPQ():
     Storm.SFileRenameFile(self.mpq_h, path.encode('utf-8'), newpath.encode('utf-8'))
 
   def remove(self, path):
-    """Remove a file from the mpq"""
+    """Remove a file from the archive."""
 
     if isinstance(path, StormFile):
       path = path.filename
@@ -151,7 +185,7 @@ class MPQ():
     Storm.SFileRemoveFile(self.mpq_h, path.encode('utf-8'), 0)
 
   def extract(self, mpq_path, local_path=None):
-    """Extract the file"""
+    """Extract a file from the archive."""
 
     # Handle arguments
     if isinstance(mpq_path, StormFile):
@@ -167,18 +201,24 @@ class MPQ():
     except Exception:
       pass
 
-    # Extract!
+    # Extract
     Storm.SFileExtractFile(self.mpq_h, mpq_path.encode('utf-8'), local_path.encode('utf-8'), 0)
 
-  def add(self, local_path, mpq_path=None):
-    """Add a local file to the mpq"""
+  def add(self, local_path, mpq_path=None, compress=True, replace=False):
+    """Add a local file to the archive"""
 
     if mpq_path is None:
       mpq_path = os.path.basename(local_path)
     elif isinstance(mpq_path, StormFile):
       mpq_path = mpq_path.filename
 
-    Storm.SFileAddFileEx(self.mpq_h, local_path.encode('utf-8'), mpq_path.encode('utf-8'), 0, 0, 0)
+    flags = 0
+    if compress:
+      flags |= StormAddFileFlag.MPQ_FILE_COMPRESS
+    if replace:
+      flags |= StormAddFileFlag.MPQ_FILE_REPLACEEXISTING
+
+    Storm.SFileAddFileEx(self.mpq_h, local_path.encode('utf-8'), mpq_path.encode('utf-8'), flags, 0, 0)
 
   def patch(self, path, prefix=''):
     """Add MPQ as patches"""

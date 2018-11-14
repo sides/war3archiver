@@ -30,22 +30,34 @@ from ctypes import (
 
 shandle = CDLL(os.path.dirname(__file__) + '/storm')
 
+class StormException(Exception):
+  def __init__(self, message, error, code):
+    self.message = message
+    self.error = error
+    self.code = code
+
+  def __repr__(self):
+    return self.message
+
+  def __str__(self):
+    return self.message
+
 # Wrapper around storm to check for errors
 class StormWrapper(type):
   def __getattr__(self, attr):
     if (attr.startswith("Try")):
       funcname = attr[3:]
-      return lambda *args: self.tryexec(funcname, *args)
+      return lambda *args: self._tryexec(funcname, *args)
 
-    return lambda *args: self.exec(attr, *args)
+    return lambda *args: self._exec(attr, *args)
 
-  def tryexec(self, funcname, *args):
+  def _tryexec(self, funcname, *args):
     try:
-      return Storm.exec(funcname, *args)
+      return self._exec(funcname, *args)
     except:
       return False
 
-  def exec(self, funcname, *args):
+  def _exec(self, funcname, *args):
     # debug
     #print(funcname, args)
 
@@ -59,8 +71,9 @@ class StormWrapper(type):
     # Handle errors
     code = shandle.GetLastError()
     if ret == 0 and code not in (0, 106, 107): # "No more files" and "End of file" are not real errors
-      message = '%s\nCall: %s %s -> %s' % (StormErrors.get(code, 'Error %i' % code), funcname, args, ret)
-      raise Exception(message)
+      error = StormErrors.get(code, code)
+      message = '%s\nCall: %s %s -> %s' % (error, funcname, args, ret)
+      raise StormException(message, error, code)
 
     return ret
 
@@ -92,6 +105,7 @@ StormErrors = {
   5:    "ERROR_ACCESS_DENIED",
   6:    "ERROR_INVALID_HANDLE",
   32:   "ERROR_ACCESS_DENIED",
+  112:  "ERROR_DISK_FULL",
   183:  "ERROR_ALREADY_EXISTS",
 
   1000: "ERROR_BAD_FORMAT",
@@ -176,10 +190,20 @@ class StormFile(Structure):
     return hash(self.cFileName)
 
   def __eq__(self, other):
-    return self.cFileName == other.cFileName
+    if isinstance(other, StormFile):
+      return self.cFileName == other.cFileName
+    elif isinstance(other, str):
+      return self.filename == other
+
+    return False
 
   def __ne__(self, other):
-    return self.cFileName != other.cFileName
+    if isinstance(other, StormFile):
+      return self.cFileName != other.cFileName
+    elif isinstance(other, str):
+      return self.filename != other
+
+    return True
 
 # Note: Only add apis that are used in stormmpq
 shandle.SFileOpenArchive.restype = c_bool
@@ -190,6 +214,15 @@ shandle.SFileCreateArchive.argtypes = [c_char_p, c_uint, c_uint, POINTER(c_void_
 
 shandle.SFileCloseArchive.restype = c_bool
 shandle.SFileCloseArchive.argtypes = [c_void_p]
+
+shandle.SFileGetMaxFileCount.restype = c_uint
+shandle.SFileGetMaxFileCount.argtypes = [c_void_p]
+
+shandle.SFileSetMaxFileCount.restype = c_bool
+shandle.SFileSetMaxFileCount.argtypes = [c_void_p, c_uint]
+
+shandle.SFileCompactArchive.restype = c_bool
+shandle.SFileCompactArchive.argtypes = [c_void_p, c_char_p, c_bool]
 
 shandle.SFileOpenPatchArchive.restype = c_bool
 shandle.SFileOpenPatchArchive.argtypes = [c_void_p, c_char_p, c_char_p, c_uint]
