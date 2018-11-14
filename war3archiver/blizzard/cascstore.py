@@ -109,9 +109,6 @@ class CascStore():
 
     contents = self.read(mpq_path)
 
-    print(mpq_path)
-    print(local_path)
-
     # Create the directories
     try:
       os.makedirs(os.path.dirname(local_path))
