@@ -180,20 +180,10 @@ class StormFile(Structure):
     return hash(self.cFileName)
 
   def __eq__(self, other):
-    if isinstance(other, StormFile):
-      return self.cFileName == other.cFileName
-    elif isinstance(other, str):
-      return self.filename == other
-
-    return False
+    return self.cFileName == other.cFileName
 
   def __ne__(self, other):
-    if isinstance(other, StormFile):
-      return self.cFileName != other.cFileName
-    elif isinstance(other, str):
-      return self.filename != other
-
-    return True
+    return self.cFileName != other.cFileName
 
 # Note: Only add apis that are used in stormmpq
 shandle.SFileOpenArchive.restype = c_bool

@@ -97,7 +97,7 @@ class MPQ():
     # Initial find
     file = MPQFile(self)
     find_h = Storm.SFileFindFirstFile(self.mpq_h, mask.encode('utf-8'), byref(file), None)
-    if not find_h:
+    if not find_h or not str(file):
       return
 
     yield file
