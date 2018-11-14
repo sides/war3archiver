@@ -58,7 +58,7 @@ class MPQ():
 
       Storm.SFileOpenArchive(filename.encode('utf-8'), 0, flags, byref(self.mpq_h))
     else:
-      Storm.SFileCreateArchive(filename.encode('utf-8'), 0, 4096, byref(self.mpq_h))
+      Storm.SFileCreateArchive(filename.encode('utf-8'), 0, 256, byref(self.mpq_h))
 
   def close(self):
     """Close the archive."""
