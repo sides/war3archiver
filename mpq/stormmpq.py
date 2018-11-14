@@ -70,8 +70,7 @@ class MPQ():
     """Compact the archive.
 
     Requires a complete listfile.
-    I'm not entirely sure what this actually does, but it tends to take
-    a few KBs off.
+    I'm not entirely sure what this actually does.
     """
     Storm.SFileCompactArchive(self.mpq_h, None, 0)
 
