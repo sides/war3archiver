@@ -12,7 +12,6 @@
 #
 
 import os
-import errno
 
 from enum import IntFlag
 from ctypes import (
@@ -91,16 +90,6 @@ StormErrors = {
   10006: "ERROR_FILE_INCOMPLETE The required file part is missing",
   10007: "ERROR_UNKNOWN_FILE_NAMES A name of at least one file is unknown",
   10008: "ERROR_CANT_FIND_PATCH_PREFIX StormLib was unable to find patch prefix for the patches",
-
-  errno.ENOENT:   "ERROR_FILE_NOT_FOUND",
-  errno.EPERM:    "ERROR_ACCESS_DENIED",
-  errno.EBADF:    "ERROR_INVALID_HANDLE",
-  errno.ENOMEM:   "ERROR_NOT_ENOUGH_MEMORY",
-  errno.ENOTSUP:  "ERROR_NOT_SUPPORTED",
-  errno.EINVAL:   "ERROR_INVALID_PARAMETER",
-  errno.ENOSPC:   "ERROR_DISK_FULL",
-  errno.EEXIST:   "ERROR_ALREADY_EXISTS",
-  errno.ENOBUFS:  "ERROR_INSUFFICIENT_BUFFER",
 
   5:    "ERROR_ACCESS_DENIED",
   6:    "ERROR_INVALID_HANDLE",
