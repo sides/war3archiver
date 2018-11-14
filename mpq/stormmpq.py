@@ -36,11 +36,11 @@ class MPQFile(StormFile):
   def extract(self, target=None):
     return self.mpq.extract(self.filename, target)
 
-  def move(self, newpath):
-    return self.mpq.move(self.filename, newpath)
+  def rename(self, newpath):
+    return self.mpq.rename(self.filename, newpath)
 
-  def delete(self):
-    return self.mpq.delete(self.filename)
+  def remove(self):
+    return self.mpq.remove(self.filename)
 
 class MPQ():
   def __init__(self, filename, readonly=True):
@@ -134,15 +134,15 @@ class MPQ():
     Storm.SFileWriteFile(file_h, byref(data), size, 0)
     Storm.SFileFinishFile(file_h)
 
-  def move(self, path, newpath):
-    """Move (rename) a file"""
+  def rename(self, path, newpath):
+    """Rename a file"""
 
     if isinstance(path, StormFile):
       path = path.filename
 
     Storm.SFileRenameFile(self.mpq_h, path.encode('utf-8'), newpath.encode('utf-8'))
 
-  def delete(self, path):
+  def remove(self, path):
     """Remove a file from the mpq"""
 
     if isinstance(path, StormFile):
