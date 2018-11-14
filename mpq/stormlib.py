@@ -71,7 +71,7 @@ class StormWrapper(type):
     # Handle errors
     code = shandle.GetLastError()
     if ret == 0 and code not in (0, 106, 107): # "No more files" and "End of file" are not real errors
-      error = StormErrors.get(code, code)
+      error = StormErrors.get(code, 'Error %s' % code)
       message = '%s\nCall: %s %s -> %s' % (error, funcname, args, ret)
       raise StormException(message, error, code)
 
