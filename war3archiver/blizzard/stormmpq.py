@@ -126,7 +126,7 @@ class MPQ():
     return Storm.TrySFileHasFile(self.mpq_h, path.encode('utf-8'))
 
   def read(self, path):
-    """Return the file content"""
+    """Return a file's contents."""
 
     # Handle argument
     if isinstance(path, StormFile):

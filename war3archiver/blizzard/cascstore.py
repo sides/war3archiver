@@ -5,7 +5,6 @@ import sys
 from ctypes import (
   byref,
   c_void_p,
-  c_char_p,
   c_uint,
   create_string_buffer
 )
@@ -27,18 +26,18 @@ class CascStoreFile(CascFile):
 
 class CascStore():
   def __init__(self, datapath, listfile=None):
-    """Open storage."""
+    """Open CASC storage."""
 
     self.listfile = listfile
     self.store_h = c_void_p()
 
     if not os.path.exists(datapath):
-      raise Exception('%s: No such directory exists')
+      raise Exception('Tried to open "%s" but no such directory exists' % datapath)
 
     Casc.CascOpenStorage(datapath.encode('utf-8'), 0, byref(self.store_h))
 
   def close(self):
-    """Close the storage."""
+    """Close the store."""
 
     Casc.CascCloseStorage(self.store_h)
     self.store_h = None
@@ -47,7 +46,7 @@ class CascStore():
     """List all files matching a mask."""
 
     if self.listfile is None:
-      raise Exception('Storage was not initialized with a listfile, can\'t search')
+      raise Exception('Store was not initialized with a listfile, can\'t search')
 
     found = set([])
 
@@ -74,7 +73,7 @@ class CascStore():
     Casc.CascFindClose(find_h)
 
   def read(self, path):
-    """Return the file content"""
+    """Return a file's contents."""
 
     # Handle argument
     if isinstance(path, CascStoreFile):
@@ -99,7 +98,7 @@ class CascStore():
     return data.raw
 
   def extract(self, mpq_path, local_path=None):
-    """Extract a file from the archive."""
+    """Extract a file from the store."""
 
     # Handle arguments
     if isinstance(mpq_path, CascStoreFile):
