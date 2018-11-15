@@ -23,8 +23,9 @@ class Packer():
 
   _mpq_internals = ['(listfile)', '(attributes)', '(signature)']
 
-  def __init__(self):
+  def __init__(self, dest):
     self._files = []
+    self._dest = dest
 
   def _getmetadata(self):
     metadata_file = next(
@@ -55,9 +56,9 @@ class Packer():
 
         self.add(PackedFile(fullpath, relpath))
 
-  def pack(self, dest):
-    dest_dir = os.path.dirname(dest)
-    temp_dest = os.path.join(dest_dir, '.temp_' + os.path.basename(dest))
+  def pack(self):
+    dest_dir = os.path.dirname(self._dest)
+    temp_dest = os.path.join(dest_dir, '.temp_' + os.path.basename(self._dest))
     mpq_contents = ''
     metadata = self._getmetadata()
 
@@ -99,7 +100,7 @@ class Packer():
     except Exception as ex:
       raise Exception('Failed to build map archive: %s' % ex)
 
-    with open(dest, 'wb') as dest_file:
+    with open(self._dest, 'wb') as dest_file:
       dest_file.write(contents)
 
 
