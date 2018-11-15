@@ -29,7 +29,7 @@ from ctypes import (
 
 shandle = CDLL(os.path.dirname(__file__) + '/storm')
 
-class StormException(Exception):
+class StormError(Exception):
   def __init__(self, message, error, code):
     self.message = message
     self.error = error
@@ -72,7 +72,7 @@ class StormWrapper(type):
     if ret == 0 and code not in (0, 106, 107): # "No more files" and "End of file" are not real errors
       error = StormErrors.get(code, 'Error %s' % code)
       message = '%s\nCall: %s %s -> %s' % (error, funcname, args, ret)
-      raise StormException(message, error, code)
+      raise StormError(message, error, code)
 
     return ret
 

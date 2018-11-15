@@ -10,7 +10,7 @@ from ctypes import (
 )
 from .casclib import (
   Casc,
-  CascException,
+  CascError,
   CascFile
 )
 

@@ -21,7 +21,7 @@ from ctypes import (
 )
 from .stormlib import (
   Storm,
-  StormException,
+  StormError,
   StormOpenArchiveFlag,
   StormCreateArchiveFlag,
   StormAddFileFlag,
@@ -191,13 +191,12 @@ class MPQ():
       mpq_path = mpq_path.filename
 
     if local_path is None:
-      local_path = mpq_path
+      local_path = mpq_path.replace('\\', '/')
 
     # Create the directories
-    local_path = local_path.replace('\\', '/')
     try:
       os.makedirs(os.path.dirname(local_path))
-    except Exception:
+    except FileExistsError:
       pass
 
     # Extract

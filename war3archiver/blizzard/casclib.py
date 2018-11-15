@@ -22,7 +22,7 @@ from ctypes import (
 
 chandle = CDLL(os.path.dirname(__file__) + '/CascLib')
 
-class CascException(Exception):
+class CascError(Exception):
   def __init__(self, message, error, code):
     self.message = message
     self.error = error
@@ -65,7 +65,7 @@ class CascWrapper(type):
     if ret == 0 and code != 0:
       error = CascErrors.get(code, 'Error %s' % code)
       message = '%s\nCall: %s %s -> %s' % (error, funcname, args, ret)
-      raise CascException(message, error, code)
+      raise CascError(message, error, code)
 
     return ret
 
