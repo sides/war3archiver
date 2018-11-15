@@ -1,4 +1,5 @@
-/mpq/storm.dll
+/war3archiver/blizzard/*.dll
+/war3archiver/blizzard/*.so
 
 __pycache__/
 
