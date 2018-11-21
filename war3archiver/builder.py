@@ -50,10 +50,7 @@ class BuildConfig():
       else:
         sink = MergeSink({ 'output': os.path.join(self.output_dir, 'work') })
 
-      pipelines.append({
-        'source': source,
-        'pipes': pipes,
-        'sink': sink })
+      pipelines.append([source] + pipes + [sink])
 
     return pipelines
 
@@ -85,15 +82,12 @@ def build(config):
   os.makedirs(build['workdir'], exist_ok=True)
 
   for index, pipeline in enumerate(config.pipelines):
-    liquids = pipeline['source'].transform(build, [])
-
     build['etcdir'] = os.path.join(config.output_dir, 'etc%s' % index)
     os.makedirs(build['etcdir'])
 
-    for pipe in pipeline['pipes']:
-      liquids = pipe.transform(build, liquids)
-
-    pipeline['sink'].transform(build, liquids)
+    liquids = []
+    for transformer in pipeline:
+      liquids = transformer.transform(build, liquids)
 
   w3x = Packer(os.path.join(config.output_dir, 'map.w3x'))
   w3x.add_dir(build['workdir'])
