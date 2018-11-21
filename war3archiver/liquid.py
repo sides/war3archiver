@@ -1,10 +1,9 @@
-import os
 import io
 
 from pathlib import Path
 
 class Liquid():
-  """Liquid class.
+  """Liquid class
 
   A liquid is an in-memory representation of a file whose data can be
   read through a stream. It should be treated as immutable and a liquid

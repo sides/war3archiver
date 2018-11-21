@@ -1,2 +1,7 @@
 from .builder import build
-from .pipes import JassHelperPipe, MapExtractorPipe
+from .transformers import (
+  FileIOSource,
+  MergeSink,
+  JassHelperPipe,
+  MapExtractorPipe
+)

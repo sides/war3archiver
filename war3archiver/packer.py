@@ -14,7 +14,7 @@ class PackedFile():
     self.packname = packname
 
 class Packer():
-  """Packer class.
+  """Packer class
 
   A packer is responsible for creating a WC3 compatible map archive and
   writing it to disk. It is only concerned with local files that should

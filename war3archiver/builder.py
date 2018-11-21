@@ -1,11 +1,9 @@
 import os
 import shutil
-import war3archiver.utils as utils
 
 from importlib import import_module
-from .sources import FileIOSource
-from .sinks import MergeSink
 from .liquid import Liquid
+from .transformers import FileIOSource, MergeSink
 from .packer import Packer
 
 class BuildConfig():
@@ -71,9 +69,9 @@ class BuildConfig():
     return pipe
 
 def build(config):
-  """Builds a map based on the config."""
+  """Builds a map based on the config"""
 
-  utils.makedirs_ifnotexists(config.output_dir)
+  os.makedirs(config.output_dir, exist_ok=True)
 
   build = {
     'workdir': os.path.join(config.output_dir, 'work'),
@@ -84,18 +82,18 @@ def build(config):
     }
   }
 
-  utils.makedirs_ifnotexists(build['workdir'])
+  os.makedirs(build['workdir'], exist_ok=True)
 
   for index, pipeline in enumerate(config.pipelines):
-    liquids = [pipeline['source'].open(build)]
+    liquids = pipeline['source'].transform(build, [])
 
     build['etcdir'] = os.path.join(config.output_dir, 'etc%s' % index)
-    utils.makedirs_ifnotexists(build['etcdir'])
+    os.makedirs(build['etcdir'])
 
     for pipe in pipeline['pipes']:
       liquids = pipe.transform(build, liquids)
 
-    pipeline['sink'].drain(build, liquids)
+    pipeline['sink'].transform(build, liquids)
 
   w3x = Packer(os.path.join(config.output_dir, 'map.w3x'))
   w3x.add_dir(build['workdir'])

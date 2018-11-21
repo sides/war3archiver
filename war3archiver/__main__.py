@@ -12,8 +12,6 @@ def main():
   with open(args.config, 'r') as json_file:
     config = json.load(json_file)
 
-  print(config)
-
   build(BuildConfig(config))
 
 if __name__ == '__main__':

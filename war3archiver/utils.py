@@ -2,7 +2,7 @@ import os
 import subprocess
 
 def exec_jasshelper(path, commonj_path, blizzardj_path, output_path, entry_script=False, script_only=False, optimize=True, debug=False):
-    """Execute the JassHelper program with options."""
+    """Execute the JassHelper program with options"""
 
     path = os.path.abspath(path)
     commonj_path = os.path.abspath(commonj_path)
@@ -34,9 +34,3 @@ def exec_jasshelper(path, commonj_path, blizzardj_path, output_path, entry_scrip
     proc.communicate()
 
     return proc.returncode == 0
-
-def makedirs_ifnotexists(directory):
-  try:
-    os.makedirs(directory)
-  except FileExistsError:
-    pass
