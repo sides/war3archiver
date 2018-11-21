@@ -6,8 +6,8 @@ class Liquid():
   """Liquid class
 
   A liquid is an in-memory representation of a file whose data can be
-  read through a stream. It should be treated as immutable and a liquid
-  will typically have a short lifespan.
+  read through a stream. It will typically have a short lifespan and
+  should be treated as immutable.
   """
 
   def __init__(self, source, reader=None):
