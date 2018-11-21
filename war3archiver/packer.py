@@ -102,6 +102,3 @@ class Packer():
 
     with open(self._dest, 'wb') as dest_file:
       dest_file.write(contents)
-
-
-
