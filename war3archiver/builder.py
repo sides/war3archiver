@@ -27,43 +27,36 @@ class BuildConfig():
       if not 'source' in pipelineconf:
         continue
 
-      if isinstance(pipelineconf['source'], str):
-        source = FileIOSource({ 'entry': pipelineconf['source'] })
-      else:
-        source = FileIOSource(pipelineconf['source'])
+      transformers = []
 
-      pipes = []
+      if isinstance(pipelineconf['source'], str):
+        transformers.append(FileIOSource({ 'entry': pipelineconf['source'] }))
+      else:
+        transformers.append(self._extract_transformer(pipelineconf['source']))
+
       if 'pipes' in pipelineconf:
         for pipeconf in pipelineconf['pipes']:
-          pipe = self._extract_pipe(pipeconf)
-
-          if not pipe:
-            continue
-
-          pipes.append(pipe)
+          transformers.append(self._extract_pipe(pipeconf))
 
       if 'sink' in pipelineconf:
         if isinstance(pipelineconf['sink'], str):
-          sink = MergeSink({ 'output': pipelineconf['sink'] })
+          transformers.append(MergeSink({ 'output': pipelineconf['sink'] }))
         else:
-          sink = MergeSink(pipelineconf['sink'])
+          transformers.append(self._extract_transformer(pipelineconf['sink']))
       else:
-        sink = MergeSink({ 'output': os.path.join(self.output_dir, 'work') })
+        transformers.append(MergeSink({ 'output': os.path.join(self.output_dir, 'work') }))
 
-      pipelines.append([source] + pipes + [sink])
+      pipelines.append(transformers)
 
     return pipelines
 
-  def _extract_pipe(self, pipeconf):
-    if not 'name' in pipeconf:
-      return False
-
-    mod_parts = os.path.splitext(pipeconf['name'])
+  def _extract_transformer(self, transformerconf):
+    mod_parts = os.path.splitext(transformerconf['name'])
     mod = import_module(mod_parts[0])
-    pipe_class = getattr(mod, mod_parts[1].lstrip('.'))
-    pipe = pipe_class(pipeconf['options'] if pipeconf['options'] else {})
+    transformer_class = getattr(mod, mod_parts[1].lstrip('.'))
+    transformer = transformer_class(transformerconf['options'] if transformerconf['options'] else {})
 
-    return pipe
+    return transformer
 
 def build(config):
   """Builds a map based on the config"""
