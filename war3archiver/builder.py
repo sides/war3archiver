@@ -50,11 +50,18 @@ class BuildConfig():
 
     return pipelines
 
-  def _extract_transformer(self, transformerconf):
-    mod_parts = os.path.splitext(transformerconf['name'])
+  def _extract_transformer(self, conf):
+    if isinstance(conf, str):
+      name = conf
+      options = {}
+    else:
+      name = conf['transformer']
+      options = conf['options'] if 'options' in conf else {}
+
+    mod_parts = os.path.splitext(name)
     mod = import_module(mod_parts[0])
     transformer_class = getattr(mod, mod_parts[1].lstrip('.'))
-    transformer = transformer_class(transformerconf['options'] if transformerconf['options'] else {})
+    transformer = transformer_class(options)
 
     return transformer
 
