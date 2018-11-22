@@ -1,7 +1,7 @@
 import os
 
+from .common import SourceTransformer, SinkTransformer
 from ..liquid import Liquid
-from ..transform import SourceTransformer, SinkTransformer
 
 class FileIOSource(SourceTransformer):
   """FileIOSource class

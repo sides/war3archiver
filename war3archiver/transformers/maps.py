@@ -1,8 +1,8 @@
 import os
 
-from ..liquid import Liquid
-from ..transform import PipeTransformer
+from .common import PipeTransformer
 from ..blizzard import MPQ
+from ..liquid import Liquid
 
 class MapExtractorPipe(PipeTransformer):
   def __init__(self, options):

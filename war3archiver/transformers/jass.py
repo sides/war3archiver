@@ -1,8 +1,8 @@
 import os
 import war3archiver.utils as utils
 
+from .common import PipeTransformer
 from ..liquid import Liquid
-from ..transform import PipeTransformer
 
 class JassHelperPipe(PipeTransformer):
   def __init__(self, options):
