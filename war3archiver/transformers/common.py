@@ -53,8 +53,13 @@ class PipeTransformer(Transformer):
 
   def transform(self, build, liquids):
     transformed = []
+    name_pattern = self.options.get('test', None)
 
     for liquid in liquids:
+      if not name_pattern is None and re.match(name_pattern, liquid.name) is None:
+        transformed.append(l)
+        continue
+
       l = self.gate(build, liquid)
 
       if l is None:
