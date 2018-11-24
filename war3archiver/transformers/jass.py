@@ -5,9 +5,6 @@ from .common import PipeTransformer
 from ..liquid import Liquid
 
 class JassHelperPipe(PipeTransformer):
-  def __init__(self, options):
-    pass
-
   def gate(self, build, liquid):
     entry_path = os.path.join(build['etcdir'], 'temp%s' % liquid.name)
     out_path = os.path.join(build['etcdir'], 'temp_out%s' % liquid.name)

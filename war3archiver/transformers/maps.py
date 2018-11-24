@@ -5,9 +5,6 @@ from ..blizzard import MPQ
 from ..liquid import Liquid
 
 class MapExtractorPipe(PipeTransformer):
-  def __init__(self, options):
-    pass
-
   def gate(self, build, liquid):
     map_liquids = []
     map_path = os.path.join(build['etcdir'], 'temp%s' % liquid.name)

@@ -9,11 +9,8 @@ class FileIOSource(SourceTransformer):
   Creates a liquid from a file on disk.
   """
 
-  def __init__(self, options):
-    self.entry_path = options['entry']
-
   def open(self, build):
-    return Liquid(self.entry_path)
+    return Liquid(self.options.get('entry'))
 
 class MergeSink(SinkTransformer):
   """MergeSink class
@@ -22,9 +19,6 @@ class MergeSink(SinkTransformer):
   with existing ones if they exist in a Warcraft III aware manner.
   """
 
-  def __init__(self, options):
-    self.output_path = options['output']
-
   def drain(self, build, liquid):
-    with open(os.path.join(self.output_path, liquid.name), 'w+b') as output_file, liquid.open() as liquid_stream:
+    with open(os.path.join(self.options.get('output'), liquid.name), 'w+b') as output_file, liquid.open() as liquid_stream:
       output_file.write(liquid_stream.read())

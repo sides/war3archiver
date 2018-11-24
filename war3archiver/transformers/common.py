@@ -6,6 +6,9 @@ class Transformer():
   liquids at all. It is the base class for sources, pipes and sinks.
   """
 
+  def __init__(self, options):
+    self.options = options
+
   def transform(self, build, liquids):
     pass
 
