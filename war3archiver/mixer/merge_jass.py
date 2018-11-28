@@ -29,7 +29,7 @@ def merge_jass(ljass, rjass):
       # Merge main and config by default
       strategy = 'merge'
     else:
-      strategy = 'win'
+      strategy = 'rename'
 
     # Get a potential override from comments
     if lineno in r_comments:
@@ -38,7 +38,9 @@ def merge_jass(ljass, rjass):
       if not match is None:
         flags = utils.parse_one_liner_flags(match[1])
 
-        if 'lose' in flags:
+        if 'rename' in flags:
+          strategy = 'rename'
+        elif 'lose' in flags:
           strategy = 'lose'
         elif 'win' in flags:
           strategy = 'win'
@@ -50,7 +52,10 @@ def merge_jass(ljass, rjass):
           strategy = 'merge'
 
     # Merge the nodes
-    if strategy == 'win':
+    if strategy == 'rename':
+      l_ast.rename(id_, id_ + '__merged_1')
+      r_ast.rename(id_, id_ + '__merged_2')
+    elif strategy == 'win':
       l_ast[id_] = r_node
       del r_ast[id_]
     elif strategy == 'lose':
@@ -61,7 +66,7 @@ def merge_jass(ljass, rjass):
       suffix = 1
       for func in [l_node, r_node]:
         for local in func.locals:
-          func.rename_local(local.id.value, local.id.value + '_%s' % suffix)
+          func.rename_local(local.id.value, local.id.value + '__merged_%s' % suffix)
 
         suffix += 1
 
