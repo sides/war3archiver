@@ -3,7 +3,7 @@ import shutil
 
 from importlib import import_module
 from .liquid import Liquid
-from .transformers import FileIOSource, MergeSink
+from .transformers import FileIOSource, MergeIOSink
 from .packer import Packer
 
 class BuildConfig():
@@ -40,11 +40,11 @@ class BuildConfig():
 
       if 'sink' in pipelineconf:
         if isinstance(pipelineconf['sink'], str):
-          transformers.append(MergeSink({ 'output': pipelineconf['sink'] }))
+          transformers.append(MergeIOSink({ 'output': pipelineconf['sink'] }))
         else:
           transformers.append(self._extract_transformer(pipelineconf['sink']))
       else:
-        transformers.append(MergeSink({ 'output': os.path.join(self.output_dir, 'work') }))
+        transformers.append(MergeIOSink({ 'output': os.path.join(self.output_dir, 'work') }))
 
       pipelines.append(transformers)
 
