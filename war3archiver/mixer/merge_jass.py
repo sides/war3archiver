@@ -18,8 +18,7 @@ def merge_jass(ljass, rjass):
 
   # Go through each node that needs merging
   for id_ in set(destination).intersection(set(incoming)):
-    incoming_node = incoming[id_]
-    lineno = incoming_node.id.line
+    inc_symbol = incoming[id_]
 
     if id_ in ['main', 'config']:
       # Merge main and config by default
@@ -28,8 +27,8 @@ def merge_jass(ljass, rjass):
       strategy = 'rename'
 
     # Get a potential override from comments
-    if lineno in comments:
-      match = re.match(r'^/// merge:(.+)', comments[lineno])
+    if inc_symbol.line in comments:
+      match = re.match(r'^/// merge:(.+)', comments[inc_symbol.line])
 
       if not match is None:
         strategy = match[1]
@@ -37,36 +36,36 @@ def merge_jass(ljass, rjass):
         if strategy == 'merge':
           if id_ != 'main' and id_ != 'config':
             raise Exception('Merge strategy "merge" may only be performed on the main or config functions: "%s" given (line %s)' % (
-              incoming_node.id.value, lineno))
+              inc_symbol.id, inc_symbol.line))
         elif strategy == 'win' or strategy == 'lose':
-          destination_node = destination[id_]
-          if not type(destination_node) is type(incoming_node):
+          dest_symbol = destination[id_]
+          if not type(dest_symbol) is type(inc_symbol):
             raise Exception('Merge strategy "%s" may only be performed on the same type of node: "%s" and "%s" differ for "%s" (line %s)' % (
-              strategy, destination_node.data, incoming_node.data, incoming_node.id.value, lineno))
+              strategy, type(dest_symbol), type(inc_symbol), inc_symbol.id, inc_symbol.line))
         elif strategy != 'rename' and strategy != 'ignore':
-          raise Exception('Unknown merge strategy "%s" (line %s)' % (strategy, lineno))
+          raise Exception('Unknown merge strategy "%s" (line %s)' % (strategy, inc_symbol.line))
 
     # Merge the nodes
     if strategy == 'rename':
       destination.rename(id_, id_ + '__merged_1')
       incoming.rename(id_, id_ + '__merged_2')
     elif strategy == 'win':
-      destination[id_] = incoming_node
+      destination[id_] = inc_symbol
       del incoming[id_]
     elif strategy == 'lose':
       del incoming[id_]
     elif strategy == 'merge':
-      destination_node = destination[id_]
+      dest_symbol = destination[id_]
 
       suffix = 1
-      for func in [destination_node, incoming_node]:
+      for func in [dest_symbol, inc_symbol]:
         for local in func.locals:
-          func.rename_local(local.id.value, local.id.value + '__merged_%s' % suffix)
+          func.rename_local(local.id, local.id + '__merged_%s' % suffix)
 
         suffix += 1
 
-      destination_node.locals += incoming_node.locals
-      destination_node.statements += incoming_node.statements
+      dest_symbol.locals += inc_symbol.locals
+      dest_symbol.statements += inc_symbol.statements
 
       del incoming[id_]
 
