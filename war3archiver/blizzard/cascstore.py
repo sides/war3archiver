@@ -52,7 +52,7 @@ class CascStore():
 
     # Initial find
     file = CascStoreFile(self)
-    find_h = Casc.CascFindFirstFile(self.store_h, mask.encode('utf-8'), byref(file), None)
+    find_h = Casc.CascFindFirstFile(self.store_h, mask.encode('utf-8'), byref(file), self.listfile.encode('utf-8'))
     if not find_h or not str(file):
       return
 
