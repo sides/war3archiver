@@ -1,7 +1,7 @@
 import os
 
 from war3structs import MapFile, MetadataFile
-from .blizzard import MPQ
+from war3structs.storage import MPQ
 
 class PackedFile():
   def __init__(self, filename, packname=None):

@@ -1,7 +1,7 @@
 import os
 
+from war3structs.storage import MPQ
 from .common import PipeTransformer
-from ..blizzard import MPQ
 from ..liquid import Liquid
 
 class MapExtractorPipe(PipeTransformer):
